@@ -15,3 +15,6 @@ biome.json
 tsconfig.json
 tsconfig.tsbuildinfo
 bun.lock
+
+# Include sample.png explicitly
+!sample.png

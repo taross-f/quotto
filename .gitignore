@@ -8,3 +8,6 @@ dist/
 .vscode/
 .idea/
 test-output/
+
+# Include sample.png explicitly
+!sample.png
