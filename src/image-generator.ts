@@ -1,6 +1,6 @@
-import sharp from 'sharp';
-import * as fs from 'node:fs';
-import * as path from 'node:path';
+import sharp from "sharp";
+import * as fs from "node:fs";
+import * as path from "node:path";
 
 export interface QuoteData {
   quote: string;
@@ -9,9 +9,9 @@ export interface QuoteData {
 }
 
 const CANVAS_WIDTH = 600;
-const CANVAS_HEIGHT = 800;
+const CANVAS_HEIGHT = 600;
 const MARGIN = 60;
-const MAX_TEXT_WIDTH = CANVAS_WIDTH - (MARGIN * 2);
+const MAX_TEXT_WIDTH = CANVAS_WIDTH - MARGIN * 2;
 
 function getCharWidth(char: string): number {
   // Check if character is full-width (Japanese, Chinese, Korean, etc.)
@@ -21,7 +21,7 @@ function getCharWidth(char: string): number {
     (code >= 0x3040 && code <= 0x309f) || // Hiragana
     (code >= 0x30a0 && code <= 0x30ff) || // Katakana
     (code >= 0x4e00 && code <= 0x9faf) || // CJK unified ideographs
-    (code >= 0xff00 && code <= 0xffef)    // Full-width ASCII
+    (code >= 0xff00 && code <= 0xffef) // Full-width ASCII
   ) {
     return 2;
   }
@@ -38,23 +38,23 @@ function calculateTextWidth(text: string): number {
 
 function wrapText(text: string, maxWidth: number, fontSize: number): string[] {
   // First, split by existing newlines
-  const paragraphs = text.split('\n');
+  const paragraphs = text.split("\n");
   const allLines: string[] = [];
-  
+
   for (const paragraph of paragraphs) {
-    if (paragraph.trim() === '') {
-      allLines.push('');
+    if (paragraph.trim() === "") {
+      allLines.push("");
       continue;
     }
-    
-    const chars = paragraph.split('');
-    let currentLine = '';
+
+    const chars = paragraph.split("");
+    let currentLine = "";
     let currentWidth = 0;
-    
+
     for (const char of chars) {
       const charWidth = getCharWidth(char);
       const estimatedPixelWidth = charWidth * fontSize * 0.5;
-      
+
       if (currentWidth + estimatedPixelWidth > maxWidth && currentLine) {
         allLines.push(currentLine);
         currentLine = char;
@@ -64,30 +64,30 @@ function wrapText(text: string, maxWidth: number, fontSize: number): string[] {
         currentWidth += estimatedPixelWidth;
       }
     }
-    
+
     if (currentLine) {
       allLines.push(currentLine);
     }
   }
-  
+
   return allLines;
 }
 
 function escapeXml(text: string): string {
   return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;');
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
 }
 
 export async function generateQuoteImage(
   quoteData: QuoteData,
   outputPath: string
 ): Promise<void> {
-  if (!quoteData.quote || quoteData.quote.trim() === '') {
-    throw new Error('Quote text cannot be empty');
+  if (!quoteData.quote || quoteData.quote.trim() === "") {
+    throw new Error("Quote text cannot be empty");
   }
 
   const outputDir = path.dirname(outputPath);
@@ -98,34 +98,50 @@ export async function generateQuoteImage(
   const quoteFontSize = 24;
   const titleFontSize = 18;
   const authorFontSize = 16;
-  
+
   const quoteLines = wrapText(quoteData.quote, MAX_TEXT_WIDTH, quoteFontSize);
-  
+
   let currentY = 120;
-  
-  let quoteElements = '';
+
+  let quoteElements = "";
   for (const line of quoteLines) {
-    quoteElements += `<text x="${CANVAS_WIDTH / 2}" y="${currentY}" fill="#2c3e50" font-size="${quoteFontSize}" font-family="Georgia, serif" text-anchor="middle" font-style="italic">${escapeXml(line)}</text>`;
+    quoteElements += `<text x="${
+      CANVAS_WIDTH / 2
+    }" y="${currentY}" fill="#2c3e50" font-size="${quoteFontSize}" font-family="Georgia, serif" text-anchor="middle" font-style="italic">${escapeXml(
+      line
+    )}</text>`;
     currentY += quoteFontSize + 8;
   }
-  
+
   currentY += 40;
-  
-  let titleElement = '';
+
+  let titleElement = "";
   if (quoteData.title) {
     const titleLines = wrapText(quoteData.title, MAX_TEXT_WIDTH, titleFontSize);
     for (const line of titleLines) {
-      titleElement += `<text x="${CANVAS_WIDTH / 2}" y="${currentY}" fill="#34495e" font-size="${titleFontSize}" font-family="Georgia, serif" text-anchor="middle" font-weight="bold">${escapeXml(line)}</text>`;
+      titleElement += `<text x="${
+        CANVAS_WIDTH / 2
+      }" y="${currentY}" fill="#34495e" font-size="${titleFontSize}" font-family="Georgia, serif" text-anchor="middle" font-weight="bold">${escapeXml(
+        line
+      )}</text>`;
       currentY += titleFontSize + 6;
     }
     currentY += 20;
   }
-  
-  let authorElement = '';
+
+  let authorElement = "";
   if (quoteData.author) {
-    const authorLines = wrapText(quoteData.author, MAX_TEXT_WIDTH, authorFontSize);
+    const authorLines = wrapText(
+      quoteData.author,
+      MAX_TEXT_WIDTH,
+      authorFontSize
+    );
     for (const line of authorLines) {
-      authorElement += `<text x="${CANVAS_WIDTH / 2}" y="${currentY}" fill="#7f8c8d" font-size="${authorFontSize}" font-family="Georgia, serif" text-anchor="middle">${escapeXml(line)}</text>`;
+      authorElement += `<text x="${
+        CANVAS_WIDTH / 2
+      }" y="${currentY}" fill="#7f8c8d" font-size="${authorFontSize}" font-family="Georgia, serif" text-anchor="middle">${escapeXml(
+        line
+      )}</text>`;
       currentY += authorFontSize + 4;
     }
   }
@@ -134,26 +150,32 @@ export async function generateQuoteImage(
     <svg width="${CANVAS_WIDTH}" height="${CANVAS_HEIGHT}" xmlns="http://www.w3.org/2000/svg">
       <rect width="100%" height="100%" fill="#f8f9fa"/>
       <rect x="0" y="0" width="100%" height="8" fill="#3498db"/>
-      <rect x="0" y="${CANVAS_HEIGHT - 8}" width="100%" height="8" fill="#3498db"/>
+      <rect x="0" y="${
+        CANVAS_HEIGHT - 8
+      }" width="100%" height="8" fill="#3498db"/>
       
-      <text x="${CANVAS_WIDTH / 2}" y="80" fill="#b0b0b0" font-size="120" font-family="Georgia, serif" opacity="0.3" text-anchor="middle">"</text>
+      <text x="${
+        CANVAS_WIDTH / 2
+      }" y="120" fill="#b0b0b0" font-size="120" font-family="Times New Roman, serif" font-weight="bold" opacity="0.3" text-anchor="middle">"</text>
       
       <rect x="${MARGIN}" y="90" width="${MAX_TEXT_WIDTH}" height="2" fill="#ecf0f1"/>
       
       ${quoteElements}
       
-      <rect x="${MARGIN}" y="${currentY - 20}" width="${MAX_TEXT_WIDTH}" height="1" fill="#ecf0f1"/>
+      <rect x="${MARGIN}" y="${
+    currentY - 20
+  }" width="${MAX_TEXT_WIDTH}" height="1" fill="#ecf0f1"/>
       
       ${titleElement}
       ${authorElement}
       
-      <text x="${CANVAS_WIDTH / 2}" y="${CANVAS_HEIGHT - 30}" fill="#95a5a6" font-size="12" font-family="Arial, sans-serif" text-anchor="middle" opacity="0.7">Generated by Innyo</text>
+      <text x="${CANVAS_WIDTH / 2}" y="${
+    CANVAS_HEIGHT - 30
+  }" fill="#95a5a6" font-size="12" font-family="Arial, sans-serif" text-anchor="middle" opacity="0.7">Generated by Innyo</text>
     </svg>
   `;
 
   const buffer = Buffer.from(svg);
-  
-  await sharp(buffer)
-    .png()
-    .toFile(outputPath);
+
+  await sharp(buffer).png().toFile(outputPath);
 }
