@@ -136,8 +136,6 @@ export async function generateKindleQuoteImage(
       <rect x="0" y="0" width="100%" height="8" fill="#3498db"/>
       <rect x="0" y="${CANVAS_HEIGHT - 8}" width="100%" height="8" fill="#3498db"/>
       
-      <text x="${CANVAS_WIDTH / 2}" y="60" fill="#2c3e50" font-size="14" font-family="Arial, sans-serif" text-anchor="middle" opacity="0.6">INNYO</text>
-      
       <rect x="${MARGIN}" y="90" width="${MAX_TEXT_WIDTH}" height="2" fill="#ecf0f1"/>
       
       ${quoteElements}
