@@ -13,28 +13,64 @@ const CANVAS_HEIGHT = 800;
 const MARGIN = 60;
 const MAX_TEXT_WIDTH = CANVAS_WIDTH - (MARGIN * 2);
 
+function getCharWidth(char: string): number {
+  // Check if character is full-width (Japanese, Chinese, Korean, etc.)
+  const code = char.charCodeAt(0);
+  if (
+    (code >= 0x3000 && code <= 0x303f) || // CJK punctuation
+    (code >= 0x3040 && code <= 0x309f) || // Hiragana
+    (code >= 0x30a0 && code <= 0x30ff) || // Katakana
+    (code >= 0x4e00 && code <= 0x9faf) || // CJK unified ideographs
+    (code >= 0xff00 && code <= 0xffef)    // Full-width ASCII
+  ) {
+    return 2;
+  }
+  return 1;
+}
+
+function calculateTextWidth(text: string): number {
+  let width = 0;
+  for (const char of text) {
+    width += getCharWidth(char);
+  }
+  return width;
+}
+
 function wrapText(text: string, maxWidth: number, fontSize: number): string[] {
-  const words = text.split(' ');
-  const lines: string[] = [];
-  let currentLine = '';
+  // First, split by existing newlines
+  const paragraphs = text.split('\n');
+  const allLines: string[] = [];
   
-  for (const word of words) {
-    const testLine = currentLine ? `${currentLine} ${word}` : word;
-    const estimatedWidth = testLine.length * (fontSize * 0.6);
+  for (const paragraph of paragraphs) {
+    if (paragraph.trim() === '') {
+      allLines.push('');
+      continue;
+    }
     
-    if (estimatedWidth > maxWidth && currentLine) {
-      lines.push(currentLine);
-      currentLine = word;
-    } else {
-      currentLine = testLine;
+    const chars = paragraph.split('');
+    let currentLine = '';
+    let currentWidth = 0;
+    
+    for (const char of chars) {
+      const charWidth = getCharWidth(char);
+      const estimatedPixelWidth = charWidth * fontSize * 0.5;
+      
+      if (currentWidth + estimatedPixelWidth > maxWidth && currentLine) {
+        allLines.push(currentLine);
+        currentLine = char;
+        currentWidth = estimatedPixelWidth;
+      } else {
+        currentLine += char;
+        currentWidth += estimatedPixelWidth;
+      }
+    }
+    
+    if (currentLine) {
+      allLines.push(currentLine);
     }
   }
   
-  if (currentLine) {
-    lines.push(currentLine);
-  }
-  
-  return lines;
+  return allLines;
 }
 
 function escapeXml(text: string): string {

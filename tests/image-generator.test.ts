@@ -123,4 +123,43 @@ describe('Image Generator', () => {
     
     expect(fs.existsSync(nestedPath)).toBe(true);
   });
+
+  it('should handle Japanese text with proper wrapping', async () => {
+    const quoteData: QuoteData = {
+      quote: 'そもそも新しいことをやると失敗するものなんですよ。でも、失敗することは問題じゃない。',
+      title: '経営者の心得',
+      author: '日本の経営者'
+    };
+    
+    const outputPath = path.join(testOutputDir, 'japanese-text.png');
+    await generateKindleQuoteImage(quoteData, outputPath);
+    
+    expect(fs.existsSync(outputPath)).toBe(true);
+  });
+
+  it('should handle Japanese text with newlines', async () => {
+    const quoteData: QuoteData = {
+      quote: 'そもそも新しいことをやると失敗するものなんですよ。\nでも、失敗することは問題じゃない。\n大切なのは失敗から何を得るか。',
+      title: 'ユニクロ',
+      author: '杉本 貴司'
+    };
+    
+    const outputPath = path.join(testOutputDir, 'japanese-multiline.png');
+    await generateKindleQuoteImage(quoteData, outputPath);
+    
+    expect(fs.existsSync(outputPath)).toBe(true);
+  });
+
+  it('should handle mixed Japanese and English text', async () => {
+    const quoteData: QuoteData = {
+      quote: 'Innovation（イノベーション）は、失敗から生まれる。\nThe best way to predict the future is to invent it.',
+      title: 'Technology and Business',
+      author: 'Tech Leader テクノロジーリーダー'
+    };
+    
+    const outputPath = path.join(testOutputDir, 'mixed-language.png');
+    await generateKindleQuoteImage(quoteData, outputPath);
+    
+    expect(fs.existsSync(outputPath)).toBe(true);
+  });
 });
