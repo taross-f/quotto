@@ -1,4 +1,4 @@
-# Innyo - Beautiful Quote Image Generator
+# Quotto - Beautiful Quote Image Generator
 
 A CLI tool to generate beautiful quote images inspired by e-reader aesthetics, built with TypeScript, Bun, and Ink.
 
@@ -21,8 +21,8 @@ A CLI tool to generate beautiful quote images inspired by e-reader aesthetics, b
 ### Install from source
 
 ```bash
-git clone https://github.com/yourusername/innyo.git
-cd innyo
+git clone https://github.com/taross-f/quotto.git
+cd quotto
 bun install
 ```
 
@@ -91,7 +91,7 @@ bun run src/cli.tsx \
 ### Project structure
 
 ```
-innyo/
+quotto/
 ├── src/
 │   ├── cli.tsx           # Main CLI interface with Ink
 │   ├── cli-parser.ts     # Command line argument parser
@@ -137,7 +137,7 @@ bun run format
 
 ## Output
 
-Innyo generates PNG images with:
+Quotto generates PNG images with:
 - Clean, minimalist design
 - Customizable quote text with automatic word wrapping
 - Optional book title and author attribution
