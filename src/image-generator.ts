@@ -9,9 +9,21 @@ export interface QuoteData {
 }
 
 const CANVAS_WIDTH = 600;
-const CANVAS_HEIGHT = 600;
+const MIN_CANVAS_HEIGHT = 400;
+const MAX_CANVAS_HEIGHT = 1200;
 const MARGIN = 60;
 const MAX_TEXT_WIDTH = CANVAS_WIDTH - MARGIN * 2;
+const FOOTER_HEIGHT = 50;
+
+// Minimum readable font sizes
+const MIN_QUOTE_FONT_SIZE = 16;
+const MIN_TITLE_FONT_SIZE = 14;
+const MIN_AUTHOR_FONT_SIZE = 12;
+
+// Maximum lines per section to maintain readability
+const MAX_QUOTE_LINES = 15;
+const MAX_TITLE_LINES = 6;
+const MAX_AUTHOR_LINES = 3;
 
 function getCharWidth(char: string): number {
   // Check if character is full-width (Japanese, Chinese, Korean, etc.)
@@ -73,6 +85,94 @@ function wrapText(text: string, maxWidth: number, fontSize: number): string[] {
   return allLines;
 }
 
+function truncateTextToMaxLines(lines: string[], maxLines: number): string[] {
+  if (lines.length <= maxLines) {
+    return lines;
+  }
+  
+  const truncatedLines = lines.slice(0, maxLines - 1);
+  const lastLine = lines[maxLines - 1];
+  
+  // Add ellipsis to the last line, ensuring it fits
+  const ellipsis = "...";
+  if (lastLine.length > 10) {
+    truncatedLines.push(lastLine.substring(0, lastLine.length - 3) + ellipsis);
+  } else {
+    truncatedLines.push(lastLine + ellipsis);
+  }
+  
+  return truncatedLines;
+}
+
+function calculateOptimalFontSizes(quoteData: QuoteData): {
+  quoteFontSize: number;
+  titleFontSize: number;
+  authorFontSize: number;
+} {
+  // Base font sizes
+  let quoteFontSize = 24;
+  let titleFontSize = 18;
+  let authorFontSize = 16;
+
+  // Calculate estimated line counts with base font sizes
+  const quoteLines = wrapText(quoteData.quote, MAX_TEXT_WIDTH, quoteFontSize);
+  const titleLines = quoteData.title ? wrapText(quoteData.title, MAX_TEXT_WIDTH, titleFontSize) : [];
+  const authorLines = quoteData.author ? wrapText(quoteData.author, MAX_TEXT_WIDTH, authorFontSize) : [];
+
+  // Check if we need to reduce font sizes based on line counts
+  if (quoteLines.length > MAX_QUOTE_LINES || 
+      titleLines.length > MAX_TITLE_LINES || 
+      authorLines.length > MAX_AUTHOR_LINES) {
+    
+    // Use minimum font sizes for very long content
+    quoteFontSize = MIN_QUOTE_FONT_SIZE;
+    titleFontSize = MIN_TITLE_FONT_SIZE;
+    authorFontSize = MIN_AUTHOR_FONT_SIZE;
+  }
+
+  return { quoteFontSize, titleFontSize, authorFontSize };
+}
+
+function calculateRequiredHeight(
+  quoteData: QuoteData,
+  fontSizes: { quoteFontSize: number; titleFontSize: number; authorFontSize: number }
+): number {
+  const { quoteFontSize, titleFontSize, authorFontSize } = fontSizes;
+  
+  let totalHeight = 120; // Starting Y position
+  
+  // Quote section - limit to max lines
+  const quoteLines = truncateTextToMaxLines(
+    wrapText(quoteData.quote, MAX_TEXT_WIDTH, quoteFontSize),
+    MAX_QUOTE_LINES
+  );
+  totalHeight += quoteLines.length * (quoteFontSize + 8);
+  totalHeight += 40; // Section spacing
+  
+  // Title section - limit to max lines
+  if (quoteData.title) {
+    const titleLines = truncateTextToMaxLines(
+      wrapText(quoteData.title, MAX_TEXT_WIDTH, titleFontSize),
+      MAX_TITLE_LINES
+    );
+    totalHeight += titleLines.length * (titleFontSize + 6);
+    totalHeight += 20; // Section spacing
+  }
+  
+  // Author section - limit to max lines
+  if (quoteData.author) {
+    const authorLines = truncateTextToMaxLines(
+      wrapText(quoteData.author, MAX_TEXT_WIDTH, authorFontSize),
+      MAX_AUTHOR_LINES
+    );
+    totalHeight += authorLines.length * (authorFontSize + 4);
+  }
+  
+  totalHeight += FOOTER_HEIGHT; // Footer space
+  
+  return totalHeight;
+}
+
 function escapeXml(text: string): string {
   return text
     .replace(/&/g, "&amp;")
@@ -95,11 +195,18 @@ export async function generateQuoteImage(
     fs.mkdirSync(outputDir, { recursive: true });
   }
 
-  const quoteFontSize = 24;
-  const titleFontSize = 18;
-  const authorFontSize = 16;
+  // Calculate optimal font sizes based on content length
+  const fontSizes = calculateOptimalFontSizes(quoteData);
+  const { quoteFontSize, titleFontSize, authorFontSize } = fontSizes;
 
-  const quoteLines = wrapText(quoteData.quote, MAX_TEXT_WIDTH, quoteFontSize);
+  // Calculate required canvas height
+  const requiredHeight = calculateRequiredHeight(quoteData, fontSizes);
+  const canvasHeight = Math.max(MIN_CANVAS_HEIGHT, Math.min(MAX_CANVAS_HEIGHT, requiredHeight));
+
+  const quoteLines = truncateTextToMaxLines(
+    wrapText(quoteData.quote, MAX_TEXT_WIDTH, quoteFontSize),
+    MAX_QUOTE_LINES
+  );
 
   let currentY = 120;
 
@@ -117,7 +224,10 @@ export async function generateQuoteImage(
 
   let titleElement = "";
   if (quoteData.title) {
-    const titleLines = wrapText(quoteData.title, MAX_TEXT_WIDTH, titleFontSize);
+    const titleLines = truncateTextToMaxLines(
+      wrapText(quoteData.title, MAX_TEXT_WIDTH, titleFontSize),
+      MAX_TITLE_LINES
+    );
     for (const line of titleLines) {
       titleElement += `<text x="${
         CANVAS_WIDTH / 2
@@ -131,10 +241,9 @@ export async function generateQuoteImage(
 
   let authorElement = "";
   if (quoteData.author) {
-    const authorLines = wrapText(
-      quoteData.author,
-      MAX_TEXT_WIDTH,
-      authorFontSize
+    const authorLines = truncateTextToMaxLines(
+      wrapText(quoteData.author, MAX_TEXT_WIDTH, authorFontSize),
+      MAX_AUTHOR_LINES
     );
     for (const line of authorLines) {
       authorElement += `<text x="${
@@ -147,11 +256,11 @@ export async function generateQuoteImage(
   }
 
   const svg = `
-    <svg width="${CANVAS_WIDTH}" height="${CANVAS_HEIGHT}" xmlns="http://www.w3.org/2000/svg">
+    <svg width="${CANVAS_WIDTH}" height="${canvasHeight}" xmlns="http://www.w3.org/2000/svg">
       <rect width="100%" height="100%" fill="#f8f9fa"/>
       <rect x="0" y="0" width="100%" height="8" fill="#3498db"/>
       <rect x="0" y="${
-        CANVAS_HEIGHT - 8
+        canvasHeight - 8
       }" width="100%" height="8" fill="#3498db"/>
       
       <text x="${
@@ -170,7 +279,7 @@ export async function generateQuoteImage(
       ${authorElement}
       
       <text x="${CANVAS_WIDTH / 2}" y="${
-    CANVAS_HEIGHT - 30
+    canvasHeight - 30
   }" fill="#95a5a6" font-size="12" font-family="Arial, sans-serif" text-anchor="middle" opacity="0.7">Generated by Quotto</text>
     </svg>
   `;
