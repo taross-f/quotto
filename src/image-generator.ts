@@ -87,7 +87,11 @@ export async function generateKindleQuoteImage(
   
   let authorElement = '';
   if (quoteData.author) {
-    authorElement = `<text x="${CANVAS_WIDTH / 2}" y="${currentY}" fill="#7f8c8d" font-size="${authorFontSize}" font-family="Georgia, serif" text-anchor="middle">${escapeXml(quoteData.author)}</text>`;
+    const authorLines = wrapText(quoteData.author, MAX_TEXT_WIDTH, authorFontSize);
+    for (const line of authorLines) {
+      authorElement += `<text x="${CANVAS_WIDTH / 2}" y="${currentY}" fill="#7f8c8d" font-size="${authorFontSize}" font-family="Georgia, serif" text-anchor="middle">${escapeXml(line)}</text>`;
+      currentY += authorFontSize + 4;
+    }
   }
 
   const svg = `

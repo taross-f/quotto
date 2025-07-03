@@ -76,6 +76,32 @@ describe('Image Generator', () => {
     expect(fs.existsSync(outputPath)).toBe(true);
   });
 
+  it('should handle long title by wrapping text', async () => {
+    const quoteData: QuoteData = {
+      quote: 'Short quote',
+      title: 'This is a very long book title that should be wrapped across multiple lines to ensure proper display within the image boundaries',
+      author: 'Author'
+    };
+    
+    const outputPath = path.join(testOutputDir, 'long-title.png');
+    await generateKindleQuoteImage(quoteData, outputPath);
+    
+    expect(fs.existsSync(outputPath)).toBe(true);
+  });
+
+  it('should handle long author name by wrapping text', async () => {
+    const quoteData: QuoteData = {
+      quote: 'Short quote',
+      title: 'Book Title',
+      author: 'This is a very long author name with multiple collaborators and contributors that should wrap properly'
+    };
+    
+    const outputPath = path.join(testOutputDir, 'long-author.png');
+    await generateKindleQuoteImage(quoteData, outputPath);
+    
+    expect(fs.existsSync(outputPath)).toBe(true);
+  });
+
   it('should throw error for empty quote', async () => {
     const quoteData: QuoteData = {
       quote: ''
