@@ -2,6 +2,10 @@
 
 A CLI tool to generate beautiful quote images inspired by e-reader aesthetics, built with TypeScript, Bun, and Ink.
 
+[![CI](https://github.com/taross-f/quotto/actions/workflows/ci.yml/badge.svg)](https://github.com/taross-f/quotto/actions/workflows/ci.yml)
+[![Publish to NPM](https://github.com/taross-f/quotto/actions/workflows/publish.yml/badge.svg)](https://github.com/taross-f/quotto/actions/workflows/publish.yml)
+
+
 ## Motivation
 
 When using e-readers like Kindle, you can easily share highlights from books managed by Amazon. However, for books not managed by Amazon (such as personal PDFs, documents sent via "Send to Kindle", or books from other sources), the highlight sharing feature is not available. Quotto fills this gap by allowing you to create beautiful, shareable quote images from any text, maintaining the clean aesthetic of e-reader interfaces.
