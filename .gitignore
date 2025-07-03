@@ -1,0 +1,10 @@
+node_modules/
+dist/
+*.png
+*.log
+.DS_Store
+*.env
+*.env.local
+.vscode/
+.idea/
+test-output/

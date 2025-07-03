@@ -1,0 +1,100 @@
+import { describe, it, expect, beforeEach, afterEach } from 'bun:test';
+import { generateKindleQuoteImage } from '../src/image-generator';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
+
+interface QuoteData {
+  quote: string;
+  title?: string;
+  author?: string;
+}
+
+describe('Image Generator', () => {
+  const testOutputDir = './test-output';
+  
+  beforeEach(() => {
+    if (!fs.existsSync(testOutputDir)) {
+      fs.mkdirSync(testOutputDir, { recursive: true });
+    }
+  });
+
+  afterEach(() => {
+    if (fs.existsSync(testOutputDir)) {
+      fs.rmSync(testOutputDir, { recursive: true, force: true });
+    }
+  });
+
+  it('should generate image with quote only', async () => {
+    const quoteData: QuoteData = {
+      quote: 'The only way to do great work is to love what you do.'
+    };
+    
+    const outputPath = path.join(testOutputDir, 'quote-only.png');
+    await generateKindleQuoteImage(quoteData, outputPath);
+    
+    expect(fs.existsSync(outputPath)).toBe(true);
+    
+    const stats = fs.statSync(outputPath);
+    expect(stats.size).toBeGreaterThan(0);
+  });
+
+  it('should generate image with quote and title', async () => {
+    const quoteData: QuoteData = {
+      quote: 'Stay hungry, stay foolish.',
+      title: 'Stanford Commencement Address'
+    };
+    
+    const outputPath = path.join(testOutputDir, 'quote-title.png');
+    await generateKindleQuoteImage(quoteData, outputPath);
+    
+    expect(fs.existsSync(outputPath)).toBe(true);
+  });
+
+  it('should generate image with quote, title and author', async () => {
+    const quoteData: QuoteData = {
+      quote: 'Innovation distinguishes between a leader and a follower.',
+      title: 'Various Interviews',
+      author: 'Steve Jobs'
+    };
+    
+    const outputPath = path.join(testOutputDir, 'quote-title-author.png');
+    await generateKindleQuoteImage(quoteData, outputPath);
+    
+    expect(fs.existsSync(outputPath)).toBe(true);
+  });
+
+  it('should handle long quotes by wrapping text', async () => {
+    const quoteData: QuoteData = {
+      quote: 'This is a very long quote that should be wrapped across multiple lines to ensure it fits properly within the image boundaries and maintains good readability.',
+      title: 'Test Book',
+      author: 'Test Author'
+    };
+    
+    const outputPath = path.join(testOutputDir, 'long-quote.png');
+    await generateKindleQuoteImage(quoteData, outputPath);
+    
+    expect(fs.existsSync(outputPath)).toBe(true);
+  });
+
+  it('should throw error for empty quote', async () => {
+    const quoteData: QuoteData = {
+      quote: ''
+    };
+    
+    const outputPath = path.join(testOutputDir, 'empty-quote.png');
+    
+    await expect(generateKindleQuoteImage(quoteData, outputPath))
+      .rejects.toThrow('Quote text cannot be empty');
+  });
+
+  it('should create directory if it does not exist', async () => {
+    const quoteData: QuoteData = {
+      quote: 'Test quote'
+    };
+    
+    const nestedPath = path.join(testOutputDir, 'nested', 'path', 'test.png');
+    await generateKindleQuoteImage(quoteData, nestedPath);
+    
+    expect(fs.existsSync(nestedPath)).toBe(true);
+  });
+});
