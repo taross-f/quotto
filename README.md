@@ -4,6 +4,7 @@ A CLI tool to generate beautiful quote images inspired by e-reader aesthetics, b
 
 [![CI](https://github.com/taross-f/quotto/actions/workflows/ci.yml/badge.svg)](https://github.com/taross-f/quotto/actions/workflows/ci.yml)
 [![Publish to NPM](https://github.com/taross-f/quotto/actions/workflows/publish.yml/badge.svg)](https://github.com/taross-f/quotto/actions/workflows/publish.yml)
+![NPM Downloads](https://img.shields.io/npm/d18m/quotto)
 
 
 ## Motivation
