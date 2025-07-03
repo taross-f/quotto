@@ -15,6 +15,16 @@ const MARGIN = 60;
 const MAX_TEXT_WIDTH = CANVAS_WIDTH - MARGIN * 2;
 const FOOTER_HEIGHT = 50;
 
+// Minimum readable font sizes
+const MIN_QUOTE_FONT_SIZE = 16;
+const MIN_TITLE_FONT_SIZE = 14;
+const MIN_AUTHOR_FONT_SIZE = 12;
+
+// Maximum lines per section to maintain readability
+const MAX_QUOTE_LINES = 15;
+const MAX_TITLE_LINES = 6;
+const MAX_AUTHOR_LINES = 3;
+
 function getCharWidth(char: string): number {
   // Check if character is full-width (Japanese, Chinese, Korean, etc.)
   const code = char.charCodeAt(0);
@@ -75,6 +85,25 @@ function wrapText(text: string, maxWidth: number, fontSize: number): string[] {
   return allLines;
 }
 
+function truncateTextToMaxLines(lines: string[], maxLines: number): string[] {
+  if (lines.length <= maxLines) {
+    return lines;
+  }
+  
+  const truncatedLines = lines.slice(0, maxLines - 1);
+  const lastLine = lines[maxLines - 1];
+  
+  // Add ellipsis to the last line, ensuring it fits
+  const ellipsis = "...";
+  if (lastLine.length > 10) {
+    truncatedLines.push(lastLine.substring(0, lastLine.length - 3) + ellipsis);
+  } else {
+    truncatedLines.push(lastLine + ellipsis);
+  }
+  
+  return truncatedLines;
+}
+
 function calculateOptimalFontSizes(quoteData: QuoteData): {
   quoteFontSize: number;
   titleFontSize: number;
@@ -85,20 +114,20 @@ function calculateOptimalFontSizes(quoteData: QuoteData): {
   let titleFontSize = 18;
   let authorFontSize = 16;
 
-  // Calculate total text length to determine if we need to reduce font sizes
-  const totalTextLength = quoteData.quote.length + 
-    (quoteData.title?.length || 0) + 
-    (quoteData.author?.length || 0);
+  // Calculate estimated line counts with base font sizes
+  const quoteLines = wrapText(quoteData.quote, MAX_TEXT_WIDTH, quoteFontSize);
+  const titleLines = quoteData.title ? wrapText(quoteData.title, MAX_TEXT_WIDTH, titleFontSize) : [];
+  const authorLines = quoteData.author ? wrapText(quoteData.author, MAX_TEXT_WIDTH, authorFontSize) : [];
 
-  // Reduce font sizes for very long content
-  if (totalTextLength > 500) {
-    quoteFontSize = 18;
-    titleFontSize = 14;
-    authorFontSize = 12;
-  } else if (totalTextLength > 300) {
-    quoteFontSize = 20;
-    titleFontSize = 16;
-    authorFontSize = 14;
+  // Check if we need to reduce font sizes based on line counts
+  if (quoteLines.length > MAX_QUOTE_LINES || 
+      titleLines.length > MAX_TITLE_LINES || 
+      authorLines.length > MAX_AUTHOR_LINES) {
+    
+    // Use minimum font sizes for very long content
+    quoteFontSize = MIN_QUOTE_FONT_SIZE;
+    titleFontSize = MIN_TITLE_FONT_SIZE;
+    authorFontSize = MIN_AUTHOR_FONT_SIZE;
   }
 
   return { quoteFontSize, titleFontSize, authorFontSize };
@@ -112,21 +141,30 @@ function calculateRequiredHeight(
   
   let totalHeight = 120; // Starting Y position
   
-  // Quote section
-  const quoteLines = wrapText(quoteData.quote, MAX_TEXT_WIDTH, quoteFontSize);
+  // Quote section - limit to max lines
+  const quoteLines = truncateTextToMaxLines(
+    wrapText(quoteData.quote, MAX_TEXT_WIDTH, quoteFontSize),
+    MAX_QUOTE_LINES
+  );
   totalHeight += quoteLines.length * (quoteFontSize + 8);
   totalHeight += 40; // Section spacing
   
-  // Title section
+  // Title section - limit to max lines
   if (quoteData.title) {
-    const titleLines = wrapText(quoteData.title, MAX_TEXT_WIDTH, titleFontSize);
+    const titleLines = truncateTextToMaxLines(
+      wrapText(quoteData.title, MAX_TEXT_WIDTH, titleFontSize),
+      MAX_TITLE_LINES
+    );
     totalHeight += titleLines.length * (titleFontSize + 6);
     totalHeight += 20; // Section spacing
   }
   
-  // Author section
+  // Author section - limit to max lines
   if (quoteData.author) {
-    const authorLines = wrapText(quoteData.author, MAX_TEXT_WIDTH, authorFontSize);
+    const authorLines = truncateTextToMaxLines(
+      wrapText(quoteData.author, MAX_TEXT_WIDTH, authorFontSize),
+      MAX_AUTHOR_LINES
+    );
     totalHeight += authorLines.length * (authorFontSize + 4);
   }
   
@@ -165,7 +203,10 @@ export async function generateQuoteImage(
   const requiredHeight = calculateRequiredHeight(quoteData, fontSizes);
   const canvasHeight = Math.max(MIN_CANVAS_HEIGHT, Math.min(MAX_CANVAS_HEIGHT, requiredHeight));
 
-  const quoteLines = wrapText(quoteData.quote, MAX_TEXT_WIDTH, quoteFontSize);
+  const quoteLines = truncateTextToMaxLines(
+    wrapText(quoteData.quote, MAX_TEXT_WIDTH, quoteFontSize),
+    MAX_QUOTE_LINES
+  );
 
   let currentY = 120;
 
@@ -183,7 +224,10 @@ export async function generateQuoteImage(
 
   let titleElement = "";
   if (quoteData.title) {
-    const titleLines = wrapText(quoteData.title, MAX_TEXT_WIDTH, titleFontSize);
+    const titleLines = truncateTextToMaxLines(
+      wrapText(quoteData.title, MAX_TEXT_WIDTH, titleFontSize),
+      MAX_TITLE_LINES
+    );
     for (const line of titleLines) {
       titleElement += `<text x="${
         CANVAS_WIDTH / 2
@@ -197,10 +241,9 @@ export async function generateQuoteImage(
 
   let authorElement = "";
   if (quoteData.author) {
-    const authorLines = wrapText(
-      quoteData.author,
-      MAX_TEXT_WIDTH,
-      authorFontSize
+    const authorLines = truncateTextToMaxLines(
+      wrapText(quoteData.author, MAX_TEXT_WIDTH, authorFontSize),
+      MAX_AUTHOR_LINES
     );
     for (const line of authorLines) {
       authorElement += `<text x="${
