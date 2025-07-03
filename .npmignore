@@ -1,0 +1,17 @@
+node_modules/
+*.log
+.DS_Store
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+tests/
+*.test.ts
+*.test.js
+.git/
+.gitignore
+biome.json
+tsconfig.json
+tsconfig.tsbuildinfo
+bun.lock

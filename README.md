@@ -2,6 +2,10 @@
 
 A CLI tool to generate beautiful quote images inspired by e-reader aesthetics, built with TypeScript, Bun, and Ink.
 
+## Motivation
+
+When using e-readers like Kindle, you can easily share highlights from books managed by Amazon. However, for books not managed by Amazon (such as personal PDFs, documents sent via "Send to Kindle", or books from other sources), the highlight sharing feature is not available. Quotto fills this gap by allowing you to create beautiful, shareable quote images from any text, maintaining the clean aesthetic of e-reader interfaces.
+
 ## Features
 
 - 📚 Generate beautiful quote images with customizable text
@@ -13,17 +17,22 @@ A CLI tool to generate beautiful quote images inspired by e-reader aesthetics, b
 
 ## Installation
 
-### Prerequisites
+### Install from NPM
 
-- [Bun](https://bun.sh/) (v1.0.0 or higher)
-- Node.js (for compatibility)
+```bash
+# Install globally
+npm install -g quotto
+
+# Or install locally in your project
+npm install quotto
+```
 
 ### Install from source
 
 ```bash
 git clone https://github.com/taross-f/quotto.git
 cd quotto
-bun install
+npm install
 ```
 
 ### Development setup
@@ -47,13 +56,17 @@ bun run dev
 ### Basic usage
 
 ```bash
-bun run src/cli.tsx --quote "Your inspiring quote here"
+# If installed globally
+quotto --quote "Your inspiring quote here"
+
+# If installed locally
+npx quotto --quote "Your inspiring quote here"
 ```
 
 ### With all options
 
 ```bash
-bun run src/cli.tsx \
+quotto \
   --quote "Innovation distinguishes\nbetween a leader and a follower." \
   --title "Various Interviews" \
   --author "Steve Jobs" \
@@ -72,16 +85,16 @@ bun run src/cli.tsx \
 
 ```bash
 # Simple quote
-bun run src/cli.tsx --quote "The only way to do great work is to love what you do."
+quotto --quote "The only way to do great work is to love what you do."
 
 # Quote with attribution
-bun run src/cli.tsx \
+quotto \
   --quote "Stay hungry,\nstay foolish." \
   --title "Stanford Commencement Address" \
   --author "Steve Jobs"
 
 # Custom output filename
-bun run src/cli.tsx \
+quotto \
   --quote "Your time is limited,\ndon't waste it living someone else's life." \
   --output "inspirational.png"
 ```
@@ -143,6 +156,12 @@ Quotto generates PNG images with:
 - Optional book title and author attribution
 - Subtle branding elements
 - High-quality rendering using Sharp
+
+### Example Output
+
+![Sample Quote Image](sample.png)
+
+*Example quote image generated with Quotto*
 
 ## License and Disclaimer
 

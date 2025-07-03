@@ -19,6 +19,19 @@
   "keywords": ["quote", "image", "cli", "typescript", "quotto"],
   "author": "",
   "license": "MIT",
+  "homepage": "https://github.com/taross-f/quotto",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/taross-f/quotto.git"
+  },
+  "bugs": {
+    "url": "https://github.com/taross-f/quotto/issues"
+  },
+  "files": [
+    "src/**/*",
+    "LICENSE",
+    "README.md"
+  ],
   "dependencies": {
     "ink": "^4.4.1",
     "react": "^18.2.0",
