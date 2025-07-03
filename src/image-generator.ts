@@ -82,7 +82,7 @@ function escapeXml(text: string): string {
     .replace(/'/g, '&apos;');
 }
 
-export async function generateKindleQuoteImage(
+export async function generateQuoteImage(
   quoteData: QuoteData,
   outputPath: string
 ): Promise<void> {

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'bun:test';
-import { generateKindleQuoteImage } from '../src/image-generator';
+import { generateQuoteImage } from '../src/image-generator';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 
@@ -30,7 +30,7 @@ describe('Image Generator', () => {
     };
     
     const outputPath = path.join(testOutputDir, 'quote-only.png');
-    await generateKindleQuoteImage(quoteData, outputPath);
+    await generateQuoteImage(quoteData, outputPath);
     
     expect(fs.existsSync(outputPath)).toBe(true);
     
@@ -45,7 +45,7 @@ describe('Image Generator', () => {
     };
     
     const outputPath = path.join(testOutputDir, 'quote-title.png');
-    await generateKindleQuoteImage(quoteData, outputPath);
+    await generateQuoteImage(quoteData, outputPath);
     
     expect(fs.existsSync(outputPath)).toBe(true);
   });
@@ -58,7 +58,7 @@ describe('Image Generator', () => {
     };
     
     const outputPath = path.join(testOutputDir, 'quote-title-author.png');
-    await generateKindleQuoteImage(quoteData, outputPath);
+    await generateQuoteImage(quoteData, outputPath);
     
     expect(fs.existsSync(outputPath)).toBe(true);
   });
@@ -71,7 +71,7 @@ describe('Image Generator', () => {
     };
     
     const outputPath = path.join(testOutputDir, 'long-quote.png');
-    await generateKindleQuoteImage(quoteData, outputPath);
+    await generateQuoteImage(quoteData, outputPath);
     
     expect(fs.existsSync(outputPath)).toBe(true);
   });
@@ -84,7 +84,7 @@ describe('Image Generator', () => {
     };
     
     const outputPath = path.join(testOutputDir, 'long-title.png');
-    await generateKindleQuoteImage(quoteData, outputPath);
+    await generateQuoteImage(quoteData, outputPath);
     
     expect(fs.existsSync(outputPath)).toBe(true);
   });
@@ -97,7 +97,7 @@ describe('Image Generator', () => {
     };
     
     const outputPath = path.join(testOutputDir, 'long-author.png');
-    await generateKindleQuoteImage(quoteData, outputPath);
+    await generateQuoteImage(quoteData, outputPath);
     
     expect(fs.existsSync(outputPath)).toBe(true);
   });
@@ -109,7 +109,7 @@ describe('Image Generator', () => {
     
     const outputPath = path.join(testOutputDir, 'empty-quote.png');
     
-    await expect(generateKindleQuoteImage(quoteData, outputPath))
+    await expect(generateQuoteImage(quoteData, outputPath))
       .rejects.toThrow('Quote text cannot be empty');
   });
 
@@ -119,7 +119,7 @@ describe('Image Generator', () => {
     };
     
     const nestedPath = path.join(testOutputDir, 'nested', 'path', 'test.png');
-    await generateKindleQuoteImage(quoteData, nestedPath);
+    await generateQuoteImage(quoteData, nestedPath);
     
     expect(fs.existsSync(nestedPath)).toBe(true);
   });
@@ -132,7 +132,7 @@ describe('Image Generator', () => {
     };
     
     const outputPath = path.join(testOutputDir, 'japanese-text.png');
-    await generateKindleQuoteImage(quoteData, outputPath);
+    await generateQuoteImage(quoteData, outputPath);
     
     expect(fs.existsSync(outputPath)).toBe(true);
   });
@@ -145,7 +145,7 @@ describe('Image Generator', () => {
     };
     
     const outputPath = path.join(testOutputDir, 'japanese-multiline.png');
-    await generateKindleQuoteImage(quoteData, outputPath);
+    await generateQuoteImage(quoteData, outputPath);
     
     expect(fs.existsSync(outputPath)).toBe(true);
   });
@@ -158,7 +158,7 @@ describe('Image Generator', () => {
     };
     
     const outputPath = path.join(testOutputDir, 'mixed-language.png');
-    await generateKindleQuoteImage(quoteData, outputPath);
+    await generateQuoteImage(quoteData, outputPath);
     
     expect(fs.existsSync(outputPath)).toBe(true);
   });

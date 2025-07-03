@@ -3,7 +3,7 @@ import type React from 'react';
 import { useState, useEffect } from 'react';
 import { render, Text, Box, Newline } from 'ink';
 import { parseCliArgs } from './cli-parser';
-import { generateKindleQuoteImage } from './image-generator';
+import { generateQuoteImage } from './image-generator';
 
 interface AppProps {
   args: string[];
@@ -24,9 +24,9 @@ const App: React.FC<AppProps> = ({ args }) => {
         setOutputPath(parsedArgs.output);
         
         setStatus('generating');
-        setMessage('Generating Kindle quote image...');
+        setMessage('Generating quote image...');
         
-        await generateKindleQuoteImage({
+        await generateQuoteImage({
           quote: parsedArgs.quote,
           title: parsedArgs.title,
           author: parsedArgs.author,

@@ -16,7 +16,7 @@
     "lint:fix": "biome lint --apply src/",
     "format": "biome format --write src/"
   },
-  "keywords": ["kindle", "quote", "image", "cli", "typescript"],
+  "keywords": ["quote", "image", "cli", "typescript", "innyo"],
   "author": "",
   "license": "MIT",
   "dependencies": {
