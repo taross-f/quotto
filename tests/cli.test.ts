@@ -34,7 +34,7 @@ describe('CLI Parser', () => {
     const args = ['--quote', 'test'];
     const result = parseCliArgs(args);
     
-    expect(result.output).toMatch(/innyo-quote-\d+\.png/);
+    expect(result.output).toMatch(/quotto-quote-\d+\.png/);
   });
 
   it('should require quote argument', () => {

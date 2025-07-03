@@ -34,7 +34,7 @@ export function parseCliArgs(args: string[]): CliArgs {
   
   if (!result.output) {
     const timestamp = Date.now();
-    result.output = `innyo-quote-${timestamp}.png`;
+    result.output = `quotto-quote-${timestamp}.png`;
   }
   
   return result as CliArgs;
