@@ -83,7 +83,7 @@ quotto \
 - `--quote` (required): The quote text to display. Supports `\n` for line breaks
 - `--title` (optional): Book or source title. Supports `\n` for line breaks
 - `--author` (optional): Author name. Supports `\n` for line breaks
-- `--output` (optional): Output filename (default: `innyo-quote-[timestamp].png`)
+- `--output` (optional): Output filename (default: `quotto-quote-[timestamp].png`)
 - `--help, -h`: Show help message
 
 ### Examples
@@ -188,16 +188,3 @@ Contributions are welcome! Please:
 3. Write tests for new functionality
 4. Ensure all tests pass
 5. Submit a pull request
-
-## Tech Stack
-
-- **Runtime**: [Bun](https://bun.sh/)
-- **Language**: TypeScript
-- **CLI Framework**: [Ink](https://github.com/vadimdemedes/ink) (React for CLIs)
-- **Image Processing**: [Sharp](https://sharp.pixelplumbing.com/)
-- **Linting**: [Biome](https://biomejs.dev/)
-- **Testing**: Bun test runner
-
----
-
-Built with ❤️ using modern web technologies
