@@ -162,4 +162,43 @@ describe('Image Generator', () => {
     
     expect(fs.existsSync(outputPath)).toBe(true);
   });
+
+  it('should handle Japanese kinsoku processing (line break prohibition)', async () => {
+    const quoteData: QuoteData = {
+      quote: 'これは日本語の禁則処理のテストです。句読点（、。）や括弧（「」）が正しく処理されることを確認します。',
+      title: '禁則処理テスト',
+      author: 'テスト作者'
+    };
+    
+    const outputPath = path.join(testOutputDir, 'kinsoku-test.png');
+    await generateQuoteImage(quoteData, outputPath);
+    
+    expect(fs.existsSync(outputPath)).toBe(true);
+  });
+
+  it('should handle line start prohibited characters', async () => {
+    const quoteData: QuoteData = {
+      quote: 'テスト文章です、これは禁則処理のテストです。行頭に句読点が来ないことを確認します！長い文章で改行位置を調整する必要があります。',
+      title: '行頭禁則テスト',
+      author: 'テスト'
+    };
+    
+    const outputPath = path.join(testOutputDir, 'line-start-prohibited.png');
+    await generateQuoteImage(quoteData, outputPath);
+    
+    expect(fs.existsSync(outputPath)).toBe(true);
+  });
+
+  it('should handle line end prohibited characters', async () => {
+    const quoteData: QuoteData = {
+      quote: '括弧の処理をテストします。「引用文」や（補足説明）が行をまたがないように処理されることを確認します。',
+      title: '行末禁則テスト',
+      author: 'テスト'
+    };
+    
+    const outputPath = path.join(testOutputDir, 'line-end-prohibited.png');
+    await generateQuoteImage(quoteData, outputPath);
+    
+    expect(fs.existsSync(outputPath)).toBe(true);
+  });
 });
