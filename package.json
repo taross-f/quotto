@@ -1,6 +1,6 @@
 {
   "name": "quotto",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "CLI tool to generate beautiful quote images with Quotto",
   "main": "src/cli.tsx",
   "type": "module",
