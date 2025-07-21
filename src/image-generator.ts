@@ -25,6 +25,10 @@ const MAX_QUOTE_LINES = 15;
 const MAX_TITLE_LINES = 6;
 const MAX_AUTHOR_LINES = 3;
 
+// 禁則処理用の文字セット
+const LINE_START_PROHIBITED = "、。）」』！？、。．，）】｝・ゝゞ々ー～…";
+const LINE_END_PROHIBITED = "（「『（【｛";
+
 function getCharWidth(char: string): number {
   // Check if character is full-width (Japanese, Chinese, Korean, etc.)
   const code = char.charCodeAt(0);
@@ -48,7 +52,7 @@ function calculateTextWidth(text: string): number {
   return width;
 }
 
-function wrapText(text: string, maxWidth: number, fontSize: number): string[] {
+export function wrapText(text: string, maxWidth: number, fontSize: number): string[] {
   // First, split by existing newlines
   const paragraphs = text.split("\n");
   const allLines: string[] = [];
@@ -63,14 +67,44 @@ function wrapText(text: string, maxWidth: number, fontSize: number): string[] {
     let currentLine = "";
     let currentWidth = 0;
 
-    for (const char of chars) {
+    for (let i = 0; i < chars.length; i++) {
+      const char = chars[i];
       const charWidth = getCharWidth(char);
       const estimatedPixelWidth = charWidth * fontSize * 0.5;
 
       if (currentWidth + estimatedPixelWidth > maxWidth && currentLine) {
-        allLines.push(currentLine);
-        currentLine = char;
-        currentWidth = estimatedPixelWidth;
+        // 禁則処理: 行末禁則文字のチェック
+        let lineBreakPos = currentLine.length;
+        let moveToNext = "";
+        
+        // 現在の行の最後の文字が行末禁則文字の場合
+        if (LINE_END_PROHIBITED.includes(currentLine[currentLine.length - 1])) {
+          // 行末禁則文字を次の行に移動
+          lineBreakPos = currentLine.length - 1;
+          moveToNext = currentLine[currentLine.length - 1];
+        }
+        
+        // 次の文字が行頭禁則文字の場合
+        if (LINE_START_PROHIBITED.includes(char)) {
+          // 現在の行の最後の文字も次の行に移動
+          if (lineBreakPos > 0) {
+            lineBreakPos--;
+            moveToNext = currentLine[lineBreakPos] + moveToNext;
+          }
+        }
+        
+        // 行を分割
+        const finalLine = currentLine.substring(0, lineBreakPos);
+        if (finalLine) {
+          allLines.push(finalLine);
+        }
+        
+        // 次の行を開始
+        currentLine = moveToNext + char;
+        currentWidth = 0;
+        for (const c of currentLine) {
+          currentWidth += getCharWidth(c) * fontSize * 0.5;
+        }
       } else {
         currentLine += char;
         currentWidth += estimatedPixelWidth;
