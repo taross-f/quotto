@@ -52,7 +52,7 @@ function calculateTextWidth(text: string): number {
   return width;
 }
 
-function wrapText(text: string, maxWidth: number, fontSize: number): string[] {
+export function wrapText(text: string, maxWidth: number, fontSize: number): string[] {
   // First, split by existing newlines
   const paragraphs = text.split("\n");
   const allLines: string[] = [];

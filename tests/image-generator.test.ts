@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'bun:test';
-import { generateQuoteImage } from '../src/image-generator';
+import { generateQuoteImage, wrapText } from '../src/image-generator';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 
@@ -163,42 +163,79 @@ describe('Image Generator', () => {
     expect(fs.existsSync(outputPath)).toBe(true);
   });
 
-  it('should handle Japanese kinsoku processing (line break prohibition)', async () => {
-    const quoteData: QuoteData = {
-      quote: 'これは日本語の禁則処理のテストです。句読点（、。）や括弧（「」）が正しく処理されることを確認します。',
-      title: '禁則処理テスト',
-      author: 'テスト作者'
-    };
+  it('should handle Japanese kinsoku processing (line break prohibition)', () => {
+    // Test case for line start prohibited character (、)
+    const text1 = 'これは禁則処理のテストです、句読点が行頭に来ないことを確認します。';
+    const lines1 = wrapText(text1, 200, 16); // Adjust width to force line break before 、
     
-    const outputPath = path.join(testOutputDir, 'kinsoku-test.png');
-    await generateQuoteImage(quoteData, outputPath);
+    // 、 should not appear at the beginning of a line
+    for (const line of lines1) {
+      expect(line[0]).not.toBe('、');
+      expect(line[0]).not.toBe('。');
+    }
     
-    expect(fs.existsSync(outputPath)).toBe(true);
+    // Test case for line end prohibited character (「)
+    const text2 = 'これは「禁則処理」のテストです。括弧が行末に来ないことを確認します。';
+    const lines2 = wrapText(text2, 150, 16); // Adjust width to potentially split at 「
+    
+    // 「 should not appear at the end of a line
+    for (const line of lines2) {
+      if (line.length > 0) {
+        expect(line[line.length - 1]).not.toBe('「');
+        expect(line[line.length - 1]).not.toBe('（');
+      }
+    }
   });
 
-  it('should handle line start prohibited characters', async () => {
-    const quoteData: QuoteData = {
-      quote: 'テスト文章です、これは禁則処理のテストです。行頭に句読点が来ないことを確認します！長い文章で改行位置を調整する必要があります。',
-      title: '行頭禁則テスト',
-      author: 'テスト'
-    };
+  it('should handle line start prohibited characters in detail', () => {
+    // Test with a string that would normally break before a prohibited character
+    const text = 'これは長い文章です、そして句読点。括弧も含みます）終了';
+    const lines = wrapText(text, 100, 16); // Small width to force wrapping
     
-    const outputPath = path.join(testOutputDir, 'line-start-prohibited.png');
-    await generateQuoteImage(quoteData, outputPath);
-    
-    expect(fs.existsSync(outputPath)).toBe(true);
+    // Check each line doesn't start with prohibited characters
+    const lineStartProhibited = '、。）」』！？、。．，）】｝・ゝゞ々ー～…';
+    for (const line of lines) {
+      if (line.length > 0) {
+        expect(lineStartProhibited.includes(line[0])).toBe(false);
+      }
+    }
   });
 
-  it('should handle line end prohibited characters', async () => {
-    const quoteData: QuoteData = {
-      quote: '括弧の処理をテストします。「引用文」や（補足説明）が行をまたがないように処理されることを確認します。',
-      title: '行末禁則テスト',
-      author: 'テスト'
-    };
+  it('should handle line end prohibited characters in detail', () => {
+    // Test with a string that would normally break after a prohibited character
+    const text = '開始（括弧の内容）そして「引用文」を含む文章です';
+    const lines = wrapText(text, 100, 16); // Small width to force wrapping
     
-    const outputPath = path.join(testOutputDir, 'line-end-prohibited.png');
-    await generateQuoteImage(quoteData, outputPath);
+    // Check each line doesn't end with prohibited characters
+    const lineEndProhibited = '（「『（【｛';
+    for (const line of lines) {
+      if (line.length > 0) {
+        expect(lineEndProhibited.includes(line[line.length - 1])).toBe(false);
+      }
+    }
+  });
+
+  it('should correctly wrap text with complex kinsoku cases', () => {
+    // Complex case with multiple potential break points
+    const text = 'テスト（これは括弧内のテキスト）、そして「引用文」。最後に！';
+    const lines = wrapText(text, 120, 16);
     
-    expect(fs.existsSync(outputPath)).toBe(true);
+    // Verify the wrapping result
+    console.log('Wrapped lines:', lines);
+    
+    // No line should start with prohibited characters
+    const lineStartProhibited = '、。）」』！？、。．，）】｝・ゝゞ々ー～…';
+    // No line should end with prohibited characters  
+    const lineEndProhibited = '（「『（【｛';
+    
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      if (line.length > 0) {
+        // Check line start
+        expect(lineStartProhibited.includes(line[0])).toBe(false);
+        // Check line end
+        expect(lineEndProhibited.includes(line[line.length - 1])).toBe(false);
+      }
+    }
   });
 });
