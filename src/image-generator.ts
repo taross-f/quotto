@@ -72,42 +72,63 @@ export function wrapText(text: string, maxWidth: number, fontSize: number): stri
       const charWidth = getCharWidth(char);
       const estimatedPixelWidth = charWidth * fontSize * 0.5;
 
+      // Check if adding this character would exceed the line width
       if (currentWidth + estimatedPixelWidth > maxWidth && currentLine) {
-        // 禁則処理: 行末禁則文字のチェック
+        // Apply kinsoku processing
         let lineBreakPos = currentLine.length;
         let moveToNext = "";
         
-        // 現在の行の最後の文字が行末禁則文字の場合
+        // Check if the last character of current line is line-end prohibited
         if (LINE_END_PROHIBITED.includes(currentLine[currentLine.length - 1])) {
-          // 行末禁則文字を次の行に移動
+          // Move the line-end prohibited character to next line
           lineBreakPos = currentLine.length - 1;
           moveToNext = currentLine[currentLine.length - 1];
         }
         
-        // 次の文字が行頭禁則文字の場合
+        // Check if the next character (current char) is line-start prohibited
         if (LINE_START_PROHIBITED.includes(char)) {
-          // 現在の行の最後の文字も次の行に移動
+          // Move one more character from current line to next line
           if (lineBreakPos > 0) {
             lineBreakPos--;
             moveToNext = currentLine[lineBreakPos] + moveToNext;
           }
         }
         
-        // 行を分割
+        // Split the line
         const finalLine = currentLine.substring(0, lineBreakPos);
         if (finalLine) {
           allLines.push(finalLine);
         }
         
-        // 次の行を開始
+        // Start next line
         currentLine = moveToNext + char;
         currentWidth = 0;
         for (const c of currentLine) {
           currentWidth += getCharWidth(c) * fontSize * 0.5;
         }
       } else {
+        // Add character to current line
         currentLine += char;
         currentWidth += estimatedPixelWidth;
+        
+        // Check if we need to apply kinsoku after adding this character
+        // This handles the case where adding a character makes it a line-end prohibited char
+        if (i < chars.length - 1) { // Not the last character
+          const nextChar = chars[i + 1];
+          const nextCharWidth = getCharWidth(nextChar);
+          const nextPixelWidth = nextCharWidth * fontSize * 0.5;
+          
+          // If next char would overflow AND current char is line-end prohibited
+          if (currentWidth + nextPixelWidth > maxWidth && LINE_END_PROHIBITED.includes(char)) {
+            // Force line break before the prohibited character
+            const beforeProhibited = currentLine.substring(0, currentLine.length - 1);
+            if (beforeProhibited) {
+              allLines.push(beforeProhibited);
+            }
+            currentLine = char; // Start new line with the prohibited character
+            currentWidth = estimatedPixelWidth;
+          }
+        }
       }
     }
 

@@ -164,26 +164,40 @@ describe('Image Generator', () => {
   });
 
   it('should handle Japanese kinsoku processing (line break prohibition)', () => {
-    // Test case for line start prohibited character (、)
-    const text1 = 'これは禁則処理のテストです、句読点が行頭に来ないことを確認します。';
-    const lines1 = wrapText(text1, 200, 16); // Adjust width to force line break before 、
+    // Test case 1: Verify 、 doesn't appear at line start
+    const text1 = 'あいうえおかきくけこ、さしすせそ';
+    const lines1 = wrapText(text1, 160, 16); // Force break around the comma
     
-    // 、 should not appear at the beginning of a line
-    for (const line of lines1) {
-      expect(line[0]).not.toBe('、');
-      expect(line[0]).not.toBe('。');
+    // Verify the comma is not at the start of the second line
+    expect(lines1.length).toBe(2);
+    expect(lines1[1][0]).not.toBe('、');
+    
+    // The implementation moves one character to prevent line-start prohibition
+    expect(lines1[0]).toBe('あいうえおかきくけ');
+    expect(lines1[1]).toBe('こ、さしすせそ');
+    
+    // Test case 2: Verify brackets and punctuation handling
+    const text2 = 'テスト（これは括弧内のテキスト）、そして「引用文」。最後に！';
+    const lines2 = wrapText(text2, 120, 16);
+    
+    // Verify no prohibited characters at line boundaries
+    for (let i = 0; i < lines2.length; i++) {
+      const line = lines2[i];
+      if (line.length > 0) {
+        // Check line doesn't start with prohibited chars
+        expect('、。）」』！？'.includes(line[0])).toBe(false);
+        // Check line doesn't end with prohibited chars
+        expect('（「『'.includes(line[line.length - 1])).toBe(false);
+      }
     }
     
-    // Test case for line end prohibited character (「)
-    const text2 = 'これは「禁則処理」のテストです。括弧が行末に来ないことを確認します。';
-    const lines2 = wrapText(text2, 150, 16); // Adjust width to potentially split at 「
+    // Test case 3: Specific case with 。at potential line start
+    const text3 = 'これはテストです。次の文章が続きます';
+    const lines3 = wrapText(text3, 128, 16); // 8 chars would put 。at line start
     
-    // 「 should not appear at the end of a line
-    for (const line of lines2) {
-      if (line.length > 0) {
-        expect(line[line.length - 1]).not.toBe('「');
-        expect(line[line.length - 1]).not.toBe('（');
-      }
+    // Verify 。is not at line start
+    if (lines3.length > 1) {
+      expect(lines3[1][0]).not.toBe('。');
     }
   });
 
@@ -237,5 +251,59 @@ describe('Image Generator', () => {
         expect(lineEndProhibited.includes(line[line.length - 1])).toBe(false);
       }
     }
+  });
+
+  it('should demonstrate kinsoku processing is working', () => {
+    // Case 1: Verify line-start prohibited character handling
+    const text1 = 'あいうえおかきくけこ、さしすせそ';
+    const lines1 = wrapText(text1, 160, 16);
+    
+    // The comma should not be at line start
+    expect(lines1.length).toBe(2);
+    expect(lines1[1][0]).not.toBe('、');
+    // Verify the actual wrapping behavior
+    expect(lines1[0]).toBe('あいうえおかきくけ');
+    expect(lines1[1]).toBe('こ、さしすせそ');
+    
+    // Case 2: Verify multiple prohibited characters
+    const text2 = 'これは文章です。「引用部分」、そして継続。';
+    const lines2 = wrapText(text2, 100, 16); // Force multiple line breaks
+    
+    // Check all lines for kinsoku violations
+    for (const line of lines2) {
+      if (line.length > 0) {
+        // No prohibited chars at line start
+        const lineStartProhibited = '、。）」』！？、。．，）】｝・ゝゞ々ー～…';
+        expect(lineStartProhibited.includes(line[0])).toBe(false);
+        // No prohibited chars at line end
+        const lineEndProhibited = '（「『（【｛';
+        expect(lineEndProhibited.includes(line[line.length - 1])).toBe(false);
+      }
+    }
+    
+    // Case 3: Show specific example of line-start prohibition working
+    const text3 = 'テスト文章、これは禁則処理のテストです。';
+    const lines3 = wrapText(text3, 80, 16); // Width that would put 、 at line start
+    
+    // Verify the comma handling
+    const hasCommaAtLineStart = lines3.some(line => line[0] === '、');
+    expect(hasCommaAtLineStart).toBe(false);
+    
+    // Case 4: Show specific example of period handling
+    const text4 = 'これはテストです。次の文章';
+    const lines4 = wrapText(text4, 128, 16);
+    
+    // Period should not be at line start
+    if (lines4.length > 1) {
+      expect(lines4[1][0]).not.toBe('。');
+      // The line break happens before the period
+      expect(lines4[0]).toBe('これはテストで');
+      expect(lines4[1]).toBe('す。次の文章');
+    }
+    
+    // Log one example to show kinsoku in action
+    console.log('Kinsoku example - preventing 。 at line start:');
+    console.log('Input:', text4);
+    console.log('Output:', lines4);
   });
 });
