@@ -110,7 +110,7 @@ describe('Image Generator', () => {
     const outputPath = path.join(testOutputDir, 'empty-quote.png');
     
     await expect(generateQuoteImage(quoteData, outputPath))
-      .rejects.toThrow('Quote text cannot be empty');
+      .rejects.toThrow('Quote text is required');
   });
 
   it('should create directory if it does not exist', async () => {
